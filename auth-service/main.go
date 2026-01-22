@@ -97,9 +97,15 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Exec("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", req.Username, req.Email, hashedPassword)
+	_, err = db.Exec("INSERT INTO users (username, email, password) VALUES ($1, $2, $3)", req.Username, req.Email, hashedPassword)
 	if err != nil {
-		http.Error(w, "User already exists", http.StatusConflict)
+		log.Printf("Registration error: %v", err)
+		if err.Error() == "pq: duplicate key value violates unique constraint \"users_username_key\"" ||
+			err.Error() == "pq: duplicate key value violates unique constraint \"users_email_key\"" {
+			http.Error(w, "Username or email already exists", http.StatusConflict)
+		} else {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -121,7 +127,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	var user User
 	var hashedPassword string
-	err := db.QueryRow("SELECT id, username, email, password FROM users WHERE email = ?", req.Email).Scan(&user.ID, &user.Username, &user.Email, &hashedPassword)
+	err := db.QueryRow("SELECT id, username, email, password FROM users WHERE email = $1", req.Email).Scan(&user.ID, &user.Username, &user.Email, &hashedPassword)
 	if err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
@@ -168,7 +174,7 @@ func meHandler(w http.ResponseWriter, r *http.Request) {
 	userID := claims["sub"].(string)
 
 	var user User
-	err = db.QueryRow("SELECT id, username, email FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Username, &user.Email)
+	err = db.QueryRow("SELECT id, username, email FROM users WHERE id = $1", userID).Scan(&user.ID, &user.Username, &user.Email)
 	if err != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return

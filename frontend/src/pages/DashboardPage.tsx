@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useStore } from '../store'
 import { useNavigate } from 'react-router-dom'
@@ -8,6 +8,26 @@ export default function DashboardPage() {
   const [newTicketDescription, setNewTicketDescription] = useState('')
   const { user, tickets, setTickets, logout } = useStore()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        if (token) {
+          const response = await axios.get('http://localhost:8080/api/tickets', {
+            headers: { Authorization: token }
+          })
+          setTickets(response.data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch tickets:', err)
+      }
+    }
+
+    if (tickets.length === 0) {
+      fetchTickets()
+    }
+  }, [setTickets, tickets.length])
 
   const handleLogout = () => {
     localStorage.removeItem('token')

@@ -29,29 +29,9 @@ app.get('/health', async (req, res) => {
     status: 'healthy',
     service: 'api-gateway',
     timestamp: new Date().toISOString(),
-    checks: {}
   };
 
-  try {
-    // Check auth service
-    const authResponse = await axios.get(`${process.env.AUTH_SERVICE_URL || 'http://auth-service:8081'}/health`, { timeout: 5000 });
-    healthStatus.checks.auth_service = 'healthy';
-  } catch (error) {
-    healthStatus.status = 'unhealthy';
-    healthStatus.checks.auth_service = `unhealthy: ${error.message}`;
-  }
-
-  try {
-    // Check ticket service
-    const ticketResponse = await axios.get(`${process.env.TICKET_SERVICE_URL || 'http://ticket-service:8082'}/health`, { timeout: 5000 });
-    healthStatus.checks.ticket_service = 'healthy';
-  } catch (error) {
-    healthStatus.status = 'unhealthy';
-    healthStatus.checks.ticket_service = `unhealthy: ${error.message}`;
-  }
-
-  const statusCode = healthStatus.status === 'healthy' ? 200 : 503;
-  res.status(statusCode).json(healthStatus);
+  res.json(healthStatus);
 });
 
 // Routes

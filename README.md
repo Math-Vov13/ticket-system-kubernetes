@@ -4,6 +4,28 @@ Une application de gestion de tickets avec une architecture microservices, utili
 
 ---
 
+## 📸 Captures d'Écran
+
+### Page d'accueil
+![Page d'accueil](references/screenshot_home.png)
+
+### Inscription
+![Inscription](references/screenshot_register.png)
+
+### Connexion
+![Connexion](references/screenshot_login.png)
+
+### Échec de connexion
+![Échec de connexion](references/screenshot_invalid_login.png)
+
+### Tableau de bord
+![Tableau de bord](references/screenshot_dashboard.png)
+
+### Gestion des tâches
+![Gestion des tâches](references/dashboard_tasks.png)
+
+---
+
 ## 📌 Architecture
 
 ### Services

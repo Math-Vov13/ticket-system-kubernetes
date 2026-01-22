@@ -1,0 +1,112 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ticket_system_test
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:6
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install Go dependencies
+      run: |
+        cd auth-service
+        go mod tidy
+
+    - name: Test Go
+      run: |
+        cd auth-service
+        go test ./...
+
+    - name: Install Python dependencies
+      run: |
+        cd ticket-service
+        pip install -r requirements.txt
+
+    - name: Test Python
+      run: |
+        cd ticket-service
+        TEST=true pytest
+
+    - name: Install Node.js dependencies for notification-service
+      run: |
+        cd notification-service
+        npm install
+
+    - name: Test notification-service
+      run: |
+        cd notification-service
+        npm test
+
+    - name: Install Node.js dependencies for api-gateway
+      run: |
+        cd api-gateway
+        npm install
+
+    - name: Test api-gateway
+      run: |
+        cd api-gateway
+        npm test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker images
+      run: |
+        docker-compose build
+
+    - name: Test Docker compose
+      run: |
+        docker-compose up -d
+        sleep 30
+        docker-compose ps
+        docker-compose logs
+        docker-compose down

@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ticket-system
+
+resources:
+  - 00-namespace.yaml
+  - 01-configmap.yaml
+  - 02-secrets.yaml
+  - 03-postgres-pvc.yaml
+  - 04-redis-pvc.yaml
+  - 10-postgres.yaml
+  - 11-redis.yaml
+  - 20-auth-service.yaml
+  - 21-ticket-service.yaml
+  - 22-notification-service.yaml
+  - 23-api-gateway.yaml
+  - 24-frontend.yaml
+  - 30-ingress.yaml
+
+images:
+  - name: auth-service
+    newName: ticket-system/auth-service
+    newTag: latest
+  - name: ticket-service
+    newName: ticket-system/ticket-service
+    newTag: latest
+  - name: notification-service
+    newName: ticket-system/notification-service
+    newTag: latest
+  - name: api-gateway
+    newName: ticket-system/api-gateway
+    newTag: latest
+  - name: frontend
+    newName: ticket-system/frontend
+    newTag: latest

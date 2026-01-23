@@ -268,3 +268,8 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+
+# Binaries and large files
+minikube*
+cri-dockerd*
+*.tgz
